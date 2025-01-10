@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistência Social - Igreja Local</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e0e0e0; /* Cinza claro */
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, select, button {
+            margin-top: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            margin-top: 20px;
+            background-color: #5cb85c;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .success-message {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            display: none;
+        }
+        .export-button {
+            margin-top: 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .export-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Assistência Social</h1>
+        <p>Preencha o formulário abaixo para solicitar auxílio:</p>
+        <form id="assistencia-form">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="idade">Idade:</label>
+            <input type="number" id="idade" name="idade" min="1" required>
+
+            <label for="filhos">Você tem filhos?</label>
+            <select id="filhos" name="filhos" required>
+                <option value="" disabled selected>Selecione</option>
+                <option value="sim">Sim</option>
+                <option value="nao">Não</option>
+            </select>
+
+            <label for="qtd_filhos">Quantos filhos? (Preencha apenas se respondeu "Sim" acima):</label>
+            <input type="number" id="qtd_filhos" name="qtd_filhos" min="0" placeholder="Exemplo: 2">
+
+            <button type="submit">Enviar</button>
+        </form>
+        <div class="success-message" id="success-message">
+            Cadastro realizado com sucesso!
+        </div>
+        <button class="export-button" id="export-pdf">Exportar PDF</button>
+    </div>
+
+    <script>
+        const form = document.getElementById('assistencia-form');
+        const successMessage = document.getElementById('success-message');
+        const exportPdfButton = document.getElementById('export-pdf');
+
+        // Armazenar os dados em memória
+        const cadastros = [];
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // Impedir envio padrão do formulário
+
+            // Obter os dados do formulário
+            const nome = document.getElementById('nome').value;
+            const idade = document.getElementById('idade').value;
+            const filhos = document.getElementById('filhos').value === 'sim'
+                ? document.getElementById('qtd_filhos').value || 0
+                : 0;
+
+            // Adicionar os dados ao array de cadastros
+            cadastros.push({ nome, idade, filhos });
+
+            // Exibir mensagem de sucesso
+            successMessage.style.display = 'block';
+
+            // Limpar o formulário
+            form.reset();
+        });
+
+        // Função para exportar os dados para PDF
+        exportPdfButton.addEventListener('click', function () {
+            if (cadastros.length === 0) {
+                alert('Nenhum cadastro disponível para exportar.');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Título do PDF
+            doc.setFontSize(18);
+            doc.text('Relatório de Cadastros', 14, 20);
+
+            // Criar tabela
+            const headers = [['Nome', 'Idade', 'Filhos']];
+            const data = cadastros.map(cadastro => [cadastro.nome, cadastro.idade, cadastro.filhos]);
+
+            doc.autoTable({
+                startY: 30,
+                head: headers,
+                body: data,
+                theme: 'grid'
+            });
+
+            // Baixar o PDF
+            doc.save('cadastros.pdf');
+        });
+    </script>
+</body>
+</html>
